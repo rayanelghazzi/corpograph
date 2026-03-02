@@ -21,6 +21,7 @@
   --color-destructive: #ca3500;
   --color-destructive-foreground: #ffffff;
   --color-success: #0a7a3f;
+  --color-green-600: oklch(62.7% 0.194 149.214);
   --color-success-foreground: #ffffff;
   --color-border: rgba(50, 48, 47, 0.1);
   --color-input: rgba(50, 48, 47, 0.1);

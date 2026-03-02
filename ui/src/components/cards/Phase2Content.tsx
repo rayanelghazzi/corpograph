@@ -44,7 +44,7 @@ export function Phase2Content({ caseData, graphData, onOpenGraph }: Phase2Conten
       <ContentCard
         title="Ownership Gap & Discrepancy Report"
         subtitle="ART-8"
-        variant={gaps.length > 0 ? "error" : "default"}
+        variant={gaps.length > 0 ? "error" : "success"}
         assistiveText={
           gaps.length > 0
             ? "Use the AI chat to help resolve ownership gaps. Ask questions about the entity structure or request assistance in tracing ownership chains."

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface ContentCardProps {
   title: string;
   subtitle?: string;
-  variant?: "default" | "error" | "info";
+  variant?: "default" | "error" | "success" | "info";
   assistiveText?: string;
   action?: ReactNode;
   children: ReactNode;
@@ -24,6 +24,7 @@ export function ContentCard({
       className={cn(
         "shadow-none",
         variant === "error" && "border-red-400 border-dashed",
+        variant === "success" && "border-2 border-[var(--color-green-600)]",
         variant === "info" && "border-blue-300 border-l-4 bg-blue-50/50"
       )}
     >

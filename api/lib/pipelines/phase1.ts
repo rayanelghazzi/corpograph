@@ -8,6 +8,7 @@ import fs from "fs/promises";
 const MOCK_REGISTRY: Record<string, Record<string, string>> = {
   default: {
     corporate_status: "active",
+    registered_address: "100 Corporate Registry Drive, Toronto, ON M5H 2N2",
   },
 };
 
@@ -69,12 +70,21 @@ export async function runPhase1(caseId: string, _jobId: string) {
 
   if (sc) {
     const registry = MOCK_REGISTRY.default;
-    if (registry.corporate_status && sc.corporate_status && sc.corporate_status !== registry.corporate_status) {
+    if (registry.corporate_status && sc.corporate_status && sc.corporate_status.toLowerCase() !== registry.corporate_status.toLowerCase()) {
       discrepancies.push({
         id: `disc-${discrepancies.length + 1}`,
         field: "corporate_status",
         extracted_value: sc.corporate_status,
         registry_value: registry.corporate_status,
+        resolved: false,
+      });
+    }
+    if (registry.registered_address && sc.registered_address && sc.registered_address.trim().toLowerCase() !== registry.registered_address.trim().toLowerCase()) {
+      discrepancies.push({
+        id: `disc-${discrepancies.length + 1}`,
+        field: "registered_address",
+        extracted_value: sc.registered_address,
+        registry_value: registry.registered_address,
         resolved: false,
       });
     }

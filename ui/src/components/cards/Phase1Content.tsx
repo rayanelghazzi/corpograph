@@ -11,8 +11,9 @@ import type { CaseDetail } from "@/api/types";
 export function Phase1Content({ caseData }: { caseData: CaseDetail }) {
   const cr = caseData.canonical_record;
   const { data: issuesData } = useIssues(caseData.id, { phase: 1 });
-  const discrepancies = cr.registry_crosscheck?.discrepancies ?? [];
-  const hasUnresolved = discrepancies.some((d) => !d.resolved);
+  const allDiscrepancies = cr.registry_crosscheck?.discrepancies ?? [];
+  const discrepancies = allDiscrepancies.filter((d) => !d.resolved);
+  const hasUnresolved = discrepancies.length > 0;
 
   return (
     <div className="space-y-6">
@@ -27,7 +28,7 @@ export function Phase1Content({ caseData }: { caseData: CaseDetail }) {
       <ContentCard
         title="Discrepancies in Cross-Check with Registry Records"
         subtitle="ART-5"
-        variant={hasUnresolved ? "error" : "default"}
+        variant={hasUnresolved ? "error" : "success"}
         assistiveText={
           hasUnresolved
             ? 'Use the AI chat to help resolve discrepancies. You can ask questions like "Are these the same address?" or request clarification on specific fields.'
