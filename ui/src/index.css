@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #32302f;
+  --color-card: #ffffff;
+  --color-card-foreground: #32302f;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #32302f;
+  --color-primary: #32302f;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f5f5f5;
+  --color-secondary-foreground: #32302f;
+  --color-muted: #f5f5f5;
+  --color-muted-foreground: #9c9c9c;
+  --color-accent: #f5f5f5;
+  --color-accent-foreground: #32302f;
+  --color-destructive: #ca3500;
+  --color-destructive-foreground: #ffffff;
+  --color-border: rgba(50, 48, 47, 0.1);
+  --color-input: rgba(50, 48, 47, 0.1);
+  --color-ring: #32302f;
+  --radius: 0.5rem;
+
+  --color-sidebar-background: #ffffff;
+  --color-sidebar-foreground: #32302f;
+  --color-sidebar-primary: #32302f;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #f5f5f5;
+  --color-sidebar-accent-foreground: #32302f;
+  --color-sidebar-border: rgba(50, 48, 47, 0.1);
+  --color-sidebar-ring: #32302f;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
