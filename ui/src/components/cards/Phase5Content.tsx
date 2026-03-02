@@ -1,5 +1,7 @@
+import { Download } from "lucide-react";
 import { ContentCard } from "./ContentCard";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -83,7 +85,27 @@ export function Phase5Content({ caseData }: { caseData: CaseDetail }) {
       </ContentCard>
 
       {/* Audit Package Manifest */}
-      <ContentCard title="Account Opening Package" subtitle="ART-23">
+      <ContentCard
+        title="Account Opening Package"
+        subtitle="ART-23"
+        action={
+          artifacts.length > 0 ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const link = document.createElement("a");
+                link.href = `/api/cases/${caseData.id}/artifacts/download`;
+                link.download = "";
+                link.click();
+              }}
+            >
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+              Download ZIP
+            </Button>
+          ) : undefined
+        }
+      >
         <Table>
           <TableHeader>
             <TableRow>
