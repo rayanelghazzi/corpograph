@@ -84,11 +84,12 @@ export async function runPhase1(caseId: string, _jobId: string) {
         resolved: false,
       });
     }
-    if (registry.registered_address && sc.registered_address && sc.registered_address.trim().toLowerCase() !== registry.registered_address.trim().toLowerCase()) {
+    const extractedAddr = typeof sc.registered_address === "string" ? sc.registered_address : String(sc.registered_address ?? "");
+    if (registry.registered_address && extractedAddr && extractedAddr.trim().toLowerCase() !== registry.registered_address.trim().toLowerCase()) {
       discrepancies.push({
         id: `disc-${discrepancies.length + 1}`,
         field: "registered_address",
-        extracted_value: sc.registered_address,
+        extracted_value: extractedAddr,
         registry_value: registry.registered_address,
         resolved: false,
       });

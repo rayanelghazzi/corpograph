@@ -120,6 +120,14 @@ export interface CanonicalRecord {
     total_known_pct?: number;
   }>;
   ownership_narrative?: string;
+  screening_results?: Array<{
+    entity_id: string;
+    entity_name: string;
+    screening_status: "clear" | "potential_match" | "confirmed_match";
+    lists_checked: string[];
+    matches?: Array<{ list: string; score: number; details: string }>;
+    screened_at: string;
+  }>;
   confirmation_measures?: Array<{
     measure: string;
     source: string;
@@ -267,6 +275,7 @@ export interface GraphNode {
   is_beneficial_owner: boolean;
   effective_ownership_pct: number | null;
   jurisdiction: string | null;
+  screening_status?: "clear" | "potential_match" | "confirmed_match" | null;
 }
 
 export interface GraphEdge {

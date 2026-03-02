@@ -376,6 +376,140 @@ ${rows || "| None | — | — | — |"}
   return { data, markdown, source_documents: [] };
 }
 
+function renderArt11(cr: CanonicalRecord): ArtifactOutput {
+  const results = cr.screening_results ?? [];
+  const now = new Date().toISOString();
+  const alerts = results.filter((r) => r.screening_status !== "clear");
+  const listsUsed = results[0]?.lists_checked ?? [];
+
+  const data = {
+    subjects_screened: results.map((r) => r.entity_name),
+    lists_used: listsUsed,
+    screened_at: results[0]?.screened_at ?? now,
+    result: alerts.length > 0 ? "potential_matches_found" : "clear",
+    total_screened: results.length,
+    total_clear: results.length - alerts.length,
+    total_flagged: alerts.length,
+    alerts: alerts.map((a) => ({
+      entity_name: a.entity_name,
+      matches: a.matches,
+    })),
+  };
+
+  const entityRows = results
+    .map(
+      (r) =>
+        `| ${r.entity_name} | ${r.screening_status === "clear" ? "Clear" : "Potential Match"} | ${r.screened_at} |`
+    )
+    .join("\n");
+
+  const alertSection =
+    alerts.length > 0
+      ? `\n## Screening Alerts\n\n${alerts
+          .map((a) => {
+            const m = a.matches?.[0];
+            return `### ${a.entity_name}\n\n- **List**: ${m?.list ?? "N/A"}\n- **Confidence**: ${m?.score ?? 0}%\n- **Details**: ${m?.details ?? "N/A"}`;
+          })
+          .join("\n\n")}`
+      : "";
+
+  const markdown = `# ART-11 — Sanctions Screening Log
+
+## Summary
+
+| Metric | Value |
+|---|---|
+| Entities Screened | ${data.total_screened} |
+| Clear | ${data.total_clear} |
+| Flagged | ${data.total_flagged} |
+| Lists Used | ${listsUsed.join(", ")} |
+| Screened At | ${data.screened_at} |
+
+## Screening Results
+
+| Entity | Status | Screened At |
+|---|---|---|
+${entityRows}
+${alertSection}`;
+
+  return { data, markdown, source_documents: [] };
+}
+
+function renderArt15(cr: CanonicalRecord): ArtifactOutput {
+  const sc = cr.subject_corporation;
+  const now = new Date().toISOString();
+  const data = {
+    entity_classification: "Active Non-Financial Entity (Active NFE)",
+    tax_residencies: [sc?.jurisdiction ?? "Canada"],
+    entity_TINs: [sc?.business_number ?? sc?.registration_number ?? "N/A"],
+    controlling_persons: (cr.beneficial_owners ?? []).map((bo) => ({
+      name: bo.name,
+      tax_residency: "Canada",
+      TIN: "On file",
+    })),
+    self_cert_signature: "[Electronic — prototype]",
+    signed_at: now,
+  };
+
+  const cpRows = data.controlling_persons
+    .map((cp) => `| ${cp.name} | ${cp.tax_residency} | ${cp.TIN} |`)
+    .join("\n");
+
+  const markdown = `# ART-15 — CRS/FATCA Self-Certification
+
+| Field | Value |
+|---|---|
+| Entity Classification | ${data.entity_classification} |
+| Tax Residency | ${data.tax_residencies.join(", ")} |
+| Entity TIN | ${data.entity_TINs.join(", ")} |
+| Signed At | ${data.signed_at} |
+
+## Controlling Persons
+
+| Name | Tax Residency | TIN |
+|---|---|---|
+${cpRows || "| N/A | — | — |"}`;
+
+  return { data, markdown, source_documents: [] };
+}
+
+function renderArt16(cr: CanonicalRecord): ArtifactOutput {
+  const ai = cr.account_intent;
+  const now = new Date().toISOString();
+  const data = {
+    nature_of_business: ai?.account_purpose ?? "Technology services and software development",
+    financial_circumstances: `Expected monthly volume: $${(ai?.expected_monthly_volume ?? 0).toLocaleString()}. Funding via ${(ai?.funding_sources ?? []).join(", ") || "business revenue"}.`,
+    investment_objectives: "Capital preservation and operational liquidity",
+    risk_tolerance: "Medium",
+    controllers_25_percent: (cr.beneficial_owners ?? [])
+      .filter((bo) => bo.effective_ownership_pct >= 25)
+      .map((bo) => ({ name: bo.name, ownership_pct: bo.effective_ownership_pct })),
+    confirmed_at: now,
+  };
+
+  const ctrlRows = data.controllers_25_percent
+    .map((c) => `| ${c.name} | ${c.ownership_pct}% |`)
+    .join("\n");
+
+  const markdown = `# ART-16 — Corporate Investing KYC Profile
+
+| Field | Value |
+|---|---|
+| Nature of Business | ${data.nature_of_business} |
+| Financial Circumstances | ${data.financial_circumstances} |
+| Investment Objectives | ${data.investment_objectives} |
+| Risk Tolerance | ${data.risk_tolerance} |
+| Confirmed At | ${data.confirmed_at} |
+
+## Controllers (25%+ Ownership)
+
+| Name | Ownership |
+|---|---|
+${ctrlRows || "| None identified | — |"}`;
+
+  return { data, markdown, source_documents: [] };
+}
+
 function stubArtifact(code: string, name: string): ArtifactOutput {
   const now = new Date().toISOString();
   return {
@@ -399,12 +533,12 @@ const RENDER_MAP: Record<string, RenderFn> = {
   "ART-12": renderArt12,
   "ART-13": renderArt13,
   "ART-14": renderArt14,
+  "ART-11": renderArt11,
+  "ART-15": renderArt15,
+  "ART-16": renderArt16,
 };
 
 const STUB_ARTIFACTS = [
-  "ART-11",
-  "ART-15",
-  "ART-16",
   "ART-17",
   "ART-18",
   "ART-19",

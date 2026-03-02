@@ -32,6 +32,10 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     const boEntityIds = new Set(beneficialOwners.map((bo) => bo.entity_id));
     const ownershipMap = computeEffectiveOwnership(canonicalRecord);
 
+    const screeningMap = new Map(
+      (canonicalRecord.screening_results ?? []).map((r) => [r.entity_id, r.screening_status])
+    );
+
     const nodes = entities.map((e) => ({
       id: e.id,
       label: e.name,
@@ -40,6 +44,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       is_beneficial_owner: boEntityIds.has(e.id),
       effective_ownership_pct: ownershipMap.get(e.id)?.effective_pct ?? null,
       jurisdiction: e.jurisdiction ?? null,
+      screening_status: screeningMap.get(e.id) ?? null,
     }));
 
     const edges = [
