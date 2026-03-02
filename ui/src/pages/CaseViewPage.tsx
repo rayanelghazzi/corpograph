@@ -27,6 +27,16 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import type { Decision, CaseDetail, GraphResponse } from "@/api/types";
 
+function getProcessingPhase(caseData: CaseDetail): number {
+  const phases = caseData.phases ?? {};
+  for (let p = 1; p <= 5; p++) {
+    if (phases[String(p)]?.status === "processing") return p;
+  }
+  const match = caseData.active_job?.type?.match(/PHASE_(\d)_RUN/);
+  if (match) return parseInt(match[1], 10);
+  return caseData.current_phase + 1;
+}
+
 export function CaseViewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -144,7 +154,7 @@ export function CaseViewPage() {
         )}
 
         {caseData.active_job && !isViewingPast ? (
-          <LoadingOverlay phase={caseData.current_phase} />
+          <LoadingOverlay phase={getProcessingPhase(caseData)} />
         ) : isTerminal && !isViewingPast ? (
           <TerminalStateView caseData={caseData} />
         ) : (
