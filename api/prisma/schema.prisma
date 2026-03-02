@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Case {
+  id               String   @id @default(uuid()) @db.Uuid
+  status           String   @default("DRAFT_INPUT")
+  corporationName  String?  @map("corporation_name")
+  canonicalRecord  Json     @default("{}") @map("canonical_record") @db.JsonB
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  documents    Document[]
+  artifacts    Artifact[]
+  issues       Issue[]
+  chatMessages ChatMessage[]
+  patchLogs    PatchLog[]
+  jobs         Job[]
+
+  @@map("cases")
+}
+
+model Document {
+  id          String   @id @default(uuid()) @db.Uuid
+  caseId      String   @map("case_id") @db.Uuid
+  filename    String
+  storagePath String   @map("storage_path")
+  docKind     String?  @map("doc_kind")
+  sizeBytes   Int      @map("size_bytes")
+  uploadedAt  DateTime @default(now()) @map("uploaded_at") @db.Timestamptz()
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model Artifact {
+  id              String   @id @default(uuid()) @db.Uuid
+  caseId          String   @map("case_id") @db.Uuid
+  artifactCode    String   @map("artifact_code")
+  name            String
+  phase           Int
+  data            Json     @db.JsonB
+  markdown        String
+  sourceDocuments String[] @map("source_documents")
+  generatedAt     DateTime @default(now()) @map("generated_at") @db.Timestamptz()
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@unique([caseId, artifactCode])
+  @@map("artifacts")
+}
+
+model Issue {
+  id             String    @id @default(uuid()) @db.Uuid
+  caseId         String    @map("case_id") @db.Uuid
+  phase          Int
+  type           String
+  severity       String
+  title          String
+  description    String
+  fieldPath      String?   @map("field_path")
+  resolved       Boolean   @default(false)
+  resolvedAt     DateTime? @map("resolved_at") @db.Timestamptz()
+  resolutionNote String?   @map("resolution_note")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("issues")
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  caseId    String   @map("case_id") @db.Uuid
+  role      String
+  content   String
+  metadata  Json?    @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  case      Case       @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  patchLogs PatchLog[]
+
+  @@map("chat_messages")
+}
+
+model PatchLog {
+  id                      String   @id @default(uuid()) @db.Uuid
+  caseId                  String   @map("case_id") @db.Uuid
+  chatMessageId           String   @map("chat_message_id") @db.Uuid
+  patches                 Json     @db.JsonB
+  canonicalSnapshotBefore Json?    @map("canonical_snapshot_before") @db.JsonB
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  case        Case        @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  chatMessage ChatMessage @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
+
+  @@map("patch_log")
+}
+
+model Job {
+  id          String    @id @default(uuid()) @db.Uuid
+  caseId      String    @map("case_id") @db.Uuid
+  type        String
+  status      String    @default("queued")
+  error       String?
+  startedAt   DateTime? @map("started_at") @db.Timestamptz()
+  completedAt DateTime? @map("completed_at") @db.Timestamptz()
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("jobs")
+}
