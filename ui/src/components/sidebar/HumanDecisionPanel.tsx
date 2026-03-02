@@ -77,7 +77,7 @@ export function HumanDecisionPanel({
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="flex w-full items-center justify-between py-2">
           <div className="text-left">
-            <h3 className="text-[20px] font-bold leading-tight">Human Decision</h3>
+            <h3 className="text-[20px] font-bold leading-tight">Decision Panel</h3>
             <p className="text-xs text-muted-foreground">Approve or escalate at decision gates</p>
           </div>
           <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
