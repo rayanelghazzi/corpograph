@@ -12,6 +12,30 @@ import { identifyBeneficialOwners } from "@/lib/graph-engine/identify-ubos";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
+/**
+ * Mark canonical record discrepancies as resolved, matching by fieldPath or discrepancy ID.
+ * Returns the field paths that were resolved (for syncing with DB issues).
+ */
+function syncDiscrepancyResolved(
+  record: CanonicalRecord,
+  fieldPaths: string[],
+  discrepancyIds: string[] = []
+): string[] {
+  const resolved: string[] = [];
+  const discs = record.registry_crosscheck?.discrepancies;
+  if (!discs) return resolved;
+
+  for (const disc of discs) {
+    if (disc.resolved) continue;
+    const fp = `subject_corporation.${disc.field}`;
+    if (fieldPaths.includes(fp) || discrepancyIds.includes(disc.id)) {
+      disc.resolved = true;
+      resolved.push(fp);
+    }
+  }
+  return resolved;
+}
+
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
@@ -138,17 +162,69 @@ export async function POST(request: NextRequest, context: RouteContext) {
               patched.beneficial_owners = identifyBeneficialOwners(patched);
             }
 
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            const validIssueIds = (result.resolveIssueIds ?? []).filter((rid) => uuidRegex.test(rid));
+
+            if (validIssueIds.length > 0) {
+              await prisma.issue.updateMany({
+                where: { id: { in: validIssueIds } },
+                data: { resolved: true, resolvedAt: new Date() },
+              });
+
+              // Sync canonical record: mark matching discrepancies as resolved
+              const resolvedIssues = await prisma.issue.findMany({
+                where: { id: { in: validIssueIds } },
+                select: { fieldPath: true },
+              });
+              syncDiscrepancyResolved(patched, resolvedIssues.map((i) => i.fieldPath).filter(Boolean) as string[]);
+            }
+
+            // Also resolve issues matching patched discrepancy field paths
+            if (result.patches) {
+              const discrepancyPaths = result.patches
+                .filter((p) => p.path.startsWith("registry_crosscheck.discrepancies") && p.op === "update")
+                .map((p) => {
+                  const match = p.path.match(/discrepancies\[(\d+)\]/);
+                  if (!match) return null;
+                  const idx = parseInt(match[1]);
+                  const disc = patched.registry_crosscheck?.discrepancies?.[idx];
+                  return disc?.field ? `subject_corporation.${disc.field}` : null;
+                })
+                .filter(Boolean);
+
+              if (discrepancyPaths.length > 0) {
+                await prisma.issue.updateMany({
+                  where: {
+                    caseId: id,
+                    fieldPath: { in: discrepancyPaths as string[] },
+                    resolved: false,
+                  },
+                  data: { resolved: true, resolvedAt: new Date() },
+                });
+              }
+            }
+
+            // If LLM only used resolve_issue_ids without patching discrepancies,
+            // also resolve by non-UUID IDs (e.g. "disc-1") that match discrepancy IDs
+            const nonUuidIds = (result.resolveIssueIds ?? []).filter((rid) => !uuidRegex.test(rid));
+            if (nonUuidIds.length > 0) {
+              const fieldPaths = syncDiscrepancyResolved(patched, [], nonUuidIds);
+              if (fieldPaths.length > 0) {
+                await prisma.issue.updateMany({
+                  where: {
+                    caseId: id,
+                    fieldPath: { in: fieldPaths },
+                    resolved: false,
+                  },
+                  data: { resolved: true, resolvedAt: new Date() },
+                });
+              }
+            }
+
             await prisma.case.update({
               where: { id },
               data: { canonicalRecord: patched as object },
             });
-
-            if (result.resolveIssueIds && result.resolveIssueIds.length > 0) {
-              await prisma.issue.updateMany({
-                where: { id: { in: result.resolveIssueIds } },
-                data: { resolved: true, resolvedAt: new Date() },
-              });
-            }
 
             const artifactCodes = PHASE_ARTIFACT_MAP[currentPhase] ?? [];
             const regenerated = await generateArtifacts(id, currentPhase, artifactCodes, patched);
@@ -161,7 +237,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
                 metadata: {
                   patches_applied: result.patches.length,
                   artifacts_regenerated: regenerated,
-                  issues_resolved: result.resolveIssueIds ?? [],
+                  issues_resolved: validIssueIds,
                 },
               },
             });
@@ -177,12 +253,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
             metadata.patches_applied = result.patches.length;
             metadata.artifacts_regenerated = regenerated;
-            metadata.issues_resolved = result.resolveIssueIds ?? [];
+            metadata.issues_resolved = validIssueIds;
 
             send("patches_applied", {
               patches_count: result.patches.length,
               patched_paths: result.patches.map((p) => p.path),
-              resolved_issue_ids: result.resolveIssueIds ?? [],
+              resolved_issue_ids: validIssueIds,
               new_issue_ids: [],
               regenerated_artifacts: regenerated,
             });

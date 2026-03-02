@@ -28,7 +28,7 @@ const APPLY_PATCHES_TOOL = {
         resolve_issue_ids: {
           type: "array",
           items: { type: "string" },
-          description: "IDs of issues that this change resolves",
+          description: "UUIDs of issues from the unresolved issues list that this change resolves. Use the exact UUID 'id' field from the issues, NOT discrepancy IDs like 'disc-1'.",
         },
       },
       required: ["patches"],

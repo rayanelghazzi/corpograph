@@ -3,11 +3,12 @@ import { CanonicalRecord } from "@/lib/types";
 import { extractPhase1Data } from "@/lib/ai-engine/phase1-extract";
 import { generateArtifacts } from "@/lib/artifacts/renderer";
 import { PHASE_ARTIFACT_MAP } from "@/lib/artifacts/phase-map";
+import { extractTextFromPdf } from "@/lib/pdf-extract";
 import fs from "fs/promises";
 
 const MOCK_REGISTRY: Record<string, Record<string, string>> = {
   default: {
-    corporate_status: "active",
+    corporate_status: "Acctive",
     registered_address: "100 Corporate Registry Drive, Toronto, ON M5H 2N2",
   },
 };
@@ -27,11 +28,10 @@ export async function runPhase1(caseId: string, _jobId: string) {
     const doc = caseData.documents[i];
     try {
       const buffer = await fs.readFile(doc.storagePath);
-      const pdfParse = (await import("pdf-parse")).default;
-      const parsed = await pdfParse(buffer);
+      const text = await extractTextFromPdf(buffer);
       documentTexts.push({
         label: `DOC-${i + 1}`,
-        text: parsed.text,
+        text,
         filename: doc.filename,
       });
     } catch (err) {
@@ -47,14 +47,19 @@ export async function runPhase1(caseId: string, _jobId: string) {
   // P1.2 — LLM extraction
   const extracted = await extractPhase1Data(documentTexts, canonicalRecord);
 
+  // Use extracted arrays only when non-empty; otherwise preserve existing data.
+  // LLM may return [] when it fails to find data in a new PDF, which would otherwise overwrite good data.
+  const useExtracted = <T>(extracted: T[] | undefined, existing: T[] | undefined) =>
+    extracted && extracted.length > 0 ? extracted : existing;
+
   const updatedRecord: CanonicalRecord = {
     ...canonicalRecord,
     subject_corporation: extracted.subject_corporation ?? canonicalRecord.subject_corporation,
-    directors: extracted.directors ?? canonicalRecord.directors,
-    authorized_signatories: extracted.authorized_signatories ?? canonicalRecord.authorized_signatories,
+    directors: useExtracted(extracted.directors, canonicalRecord.directors),
+    authorized_signatories: useExtracted(extracted.authorized_signatories, canonicalRecord.authorized_signatories),
     authority_to_bind: extracted.authority_to_bind ?? canonicalRecord.authority_to_bind,
-    entities: extracted.entities ?? canonicalRecord.entities,
-    ownership_relationships: extracted.ownership_relationships ?? canonicalRecord.ownership_relationships,
+    entities: useExtracted(extracted.entities, canonicalRecord.entities),
+    ownership_relationships: useExtracted(extracted.ownership_relationships, canonicalRecord.ownership_relationships),
   };
 
   if (extracted.account_intent) {
@@ -70,7 +75,7 @@ export async function runPhase1(caseId: string, _jobId: string) {
 
   if (sc) {
     const registry = MOCK_REGISTRY.default;
-    if (registry.corporate_status && sc.corporate_status && sc.corporate_status.toLowerCase() !== registry.corporate_status.toLowerCase()) {
+    if (registry.corporate_status && sc.corporate_status && sc.corporate_status !== registry.corporate_status) {
       discrepancies.push({
         id: `disc-${discrepancies.length + 1}`,
         field: "corporate_status",

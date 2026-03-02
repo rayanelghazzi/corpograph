@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { ContentCard } from "./ContentCard";
 import { useIssues } from "@/hooks/use-issues";
@@ -44,24 +45,35 @@ export function Phase1Content({ caseData }: { caseData: CaseDetail }) {
             No discrepancies found.
           </div>
         )}
-        {discrepancies.map((d) => (
-          <div key={d.id} className="space-y-2 rounded-lg border border-red-200 bg-red-50/50 p-4">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-red-500" />
-              <span className="font-semibold text-sm">{d.field}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-xs text-muted-foreground">Board Resolution</p>
-                <p className="font-medium">{d.extracted_value}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Registry Record</p>
-                <p className="font-medium">{d.registry_value}</p>
-              </div>
-            </div>
-          </div>
-        ))}
+        <div className="flex flex-col gap-4">
+          <AnimatePresence mode="popLayout">
+            {discrepancies.map((d) => (
+              <motion.div
+                key={d.id}
+                layout
+                initial={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0, overflow: "hidden" }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="space-y-2 rounded-lg border border-red-200 bg-red-50/50 p-4 shrink-0"
+              >
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <span className="font-semibold text-sm">{d.field}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Board Resolution</p>
+                    <p className="font-medium">{d.extracted_value}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Registry Record</p>
+                    <p className="font-medium">{d.registry_value}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       </ContentCard>
 
       {/* Corporation Identity */}
