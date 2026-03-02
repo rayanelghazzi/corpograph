@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useCaseWithPolling } from "@/hooks/use-case";
@@ -23,7 +23,9 @@ import { Phase4Content } from "@/components/cards/Phase4Content";
 import { Phase5Content } from "@/components/cards/Phase5Content";
 import { TerminalStateView } from "@/components/cards/TerminalStateView";
 import { Separator } from "@/components/ui/separator";
-import type { Decision, CaseDetail } from "@/api/types";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import type { Decision, CaseDetail, GraphResponse } from "@/api/types";
 
 export function CaseViewPage() {
   const { id } = useParams<{ id: string }>();
@@ -35,12 +37,21 @@ export function CaseViewPage() {
   const [graphOpen, setGraphOpen] = useState(false);
   const [artifactCode, setArtifactCode] = useState<string | null>(null);
   const [isDeciding, setIsDeciding] = useState(false);
+  const [viewingPhase, setViewingPhase] = useState<number | null>(null);
 
+  const currentPhase = caseData?.current_phase ?? 1;
   const isTerminal = caseData
     ? ["ESCALATED", "REJECTED", "APPROVED"].includes(caseData.status)
     : false;
 
-  const graphEnabled = (caseData?.current_phase ?? 0) >= 2 && !isTerminal;
+  const effectiveViewing = viewingPhase ?? currentPhase;
+  const isViewingPast = effectiveViewing < currentPhase;
+
+  useEffect(() => {
+    setViewingPhase(null);
+  }, [currentPhase]);
+
+  const graphEnabled = currentPhase >= 2 && !isTerminal;
   const { data: graphData } = useGraph(id!, graphEnabled);
 
   const handleDecision = useCallback(
@@ -48,7 +59,7 @@ export function CaseViewPage() {
       if (!caseData) return;
       setIsDeciding(true);
       try {
-        const res = await submitDecision(caseData.id, caseData.current_phase, {
+        await submitDecision(caseData.id, caseData.current_phase, {
           decision,
           rationale,
         });
@@ -64,7 +75,6 @@ export function CaseViewPage() {
         } else if (decision === "approve") {
           toast.success("Case approved");
         }
-        // proceed: polling will pick up the new state
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Decision failed");
       } finally {
@@ -88,10 +98,11 @@ export function CaseViewPage() {
         phase={caseData.current_phase}
         issueSummary={caseData.issue_summary}
         isTerminal={isTerminal}
+        isViewingPast={isViewingPast}
         isLoading={isDeciding}
         onDecision={handleDecision}
       />
-      <Separator />
+      {!isViewingPast && !isTerminal && <Separator />}
       <ArtifactsPanel
         artifacts={artifactsData?.artifacts ?? []}
         currentPhase={caseData.current_phase}
@@ -109,15 +120,35 @@ export function CaseViewPage() {
         currentPhase={caseData.current_phase}
         onViewGraph={() => setGraphOpen(true)}
       />
-      <PhaseProgressBar phases={caseData.phases} currentPhase={caseData.current_phase} />
+      <PhaseProgressBar
+        phases={caseData.phases}
+        currentPhase={caseData.current_phase}
+        viewingPhase={effectiveViewing}
+        isJobActive={!!caseData.active_job}
+        onStepClick={(phase) => setViewingPhase(phase === currentPhase ? null : phase)}
+      />
 
       <CaseViewLayout sidebar={sidebar}>
-        {caseData.active_job ? (
+        {isViewingPast && (
+          <div className="mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-muted-foreground"
+              onClick={() => setViewingPhase(null)}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to current phase
+            </Button>
+          </div>
+        )}
+
+        {caseData.active_job && !isViewingPast ? (
           <LoadingOverlay phase={caseData.current_phase} />
-        ) : isTerminal ? (
+        ) : isTerminal && !isViewingPast ? (
           <TerminalStateView caseData={caseData} />
         ) : (
-          <PhaseContent phase={caseData.current_phase} caseData={caseData} />
+          <PhaseContent phase={effectiveViewing} caseData={caseData} graphData={graphData} onOpenGraph={() => setGraphOpen(true)} />
         )}
       </CaseViewLayout>
 
@@ -146,10 +177,15 @@ export function CaseViewPage() {
   );
 }
 
-function PhaseContent({ phase, caseData }: { phase: number; caseData: CaseDetail }) {
+function PhaseContent({ phase, caseData, graphData, onOpenGraph }: {
+  phase: number;
+  caseData: CaseDetail;
+  graphData?: GraphResponse | null;
+  onOpenGraph?: () => void;
+}) {
   switch (phase) {
     case 1: return <Phase1Content caseData={caseData} />;
-    case 2: return <Phase2Content caseData={caseData} />;
+    case 2: return <Phase2Content caseData={caseData} graphData={graphData} onOpenGraph={onOpenGraph} />;
     case 3: return <Phase3Content caseData={caseData} />;
     case 4: return <Phase4Content caseData={caseData} />;
     case 5: return <Phase5Content caseData={caseData} />;

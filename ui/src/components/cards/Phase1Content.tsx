@@ -1,6 +1,7 @@
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { ContentCard } from "./ContentCard";
 import { useIssues } from "@/hooks/use-issues";
+import { useFlashClass } from "@/hooks/use-patch-highlight";
 import { formatRole } from "@/lib/format";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -67,18 +68,15 @@ export function Phase1Content({ caseData }: { caseData: CaseDetail }) {
         {cr.subject_corporation ? (
           <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
             {[
-              ["Legal Name", cr.subject_corporation.legal_name],
-              ["Jurisdiction", cr.subject_corporation.jurisdiction],
-              ["Registration Number", cr.subject_corporation.registration_number],
-              ["Incorporation Date", cr.subject_corporation.incorporation_date],
-              ["Registered Address", cr.subject_corporation.registered_address],
-              ...(cr.subject_corporation.business_number ? [["Business Number", cr.subject_corporation.business_number]] : []),
-              ...(cr.subject_corporation.corporate_status ? [["Corporate Status", cr.subject_corporation.corporate_status]] : []),
-            ].map(([label, value]) => (
-              <div key={label}>
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="font-medium">{value ?? "—"}</p>
-              </div>
+              ["Legal Name", cr.subject_corporation.legal_name, "subject_corporation.legal_name"],
+              ["Jurisdiction", cr.subject_corporation.jurisdiction, "subject_corporation.jurisdiction"],
+              ["Registration Number", cr.subject_corporation.registration_number, "subject_corporation.registration_number"],
+              ["Incorporation Date", cr.subject_corporation.incorporation_date, "subject_corporation.incorporation_date"],
+              ["Registered Address", cr.subject_corporation.registered_address, "subject_corporation.registered_address"],
+              ...(cr.subject_corporation.business_number ? [["Business Number", cr.subject_corporation.business_number, "subject_corporation.business_number"]] : []),
+              ...(cr.subject_corporation.corporate_status ? [["Corporate Status", cr.subject_corporation.corporate_status, "subject_corporation.corporate_status"]] : []),
+            ].map(([label, value, path]) => (
+              <FlashField key={label} label={label} value={value ?? "—"} path={path} />
             ))}
           </div>
         ) : (
@@ -99,13 +97,13 @@ export function Phase1Content({ caseData }: { caseData: CaseDetail }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {cr.directors!.map((d) => (
-                <TableRow key={d.id}>
+              {cr.directors!.map((d, i) => (
+                <FlashRow key={d.id} path={`directors[${i}]`}>
                   <TableCell className="font-medium">{d.full_name}</TableCell>
                   <TableCell>{formatRole(d.role)}</TableCell>
                   <TableCell className="text-sm">{d.address ?? "—"}</TableCell>
                   <TableCell className="text-sm">{d.appointment_date ?? "—"}</TableCell>
-                </TableRow>
+                </FlashRow>
               ))}
             </TableBody>
           </Table>
@@ -133,13 +131,13 @@ export function Phase1Content({ caseData }: { caseData: CaseDetail }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {cr.authorized_signatories!.map((s) => (
-                <TableRow key={s.id}>
+              {cr.authorized_signatories!.map((s, i) => (
+                <FlashRow key={s.id} path={`authorized_signatories[${i}]`}>
                   <TableCell className="font-medium">{s.full_name}</TableCell>
                   <TableCell className="text-sm">{s.residential_address}</TableCell>
                   <TableCell className="text-sm">{s.occupation ?? "—"}</TableCell>
                   <TableCell className="text-sm">{s.authority_limits}</TableCell>
-                </TableRow>
+                </FlashRow>
               ))}
             </TableBody>
           </Table>
@@ -149,4 +147,19 @@ export function Phase1Content({ caseData }: { caseData: CaseDetail }) {
       </ContentCard>
     </div>
   );
+}
+
+function FlashField({ label, value, path }: { label: string; value: string; path: string }) {
+  const flash = useFlashClass(path);
+  return (
+    <div className={flash}>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="font-medium">{value}</p>
+    </div>
+  );
+}
+
+function FlashRow({ path, children }: { path: string; children: React.ReactNode }) {
+  const flash = useFlashClass(path);
+  return <TableRow className={flash}>{children}</TableRow>;
 }

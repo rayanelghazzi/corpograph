@@ -328,7 +328,7 @@ export type SSEEvent =
   | { type: "message_start"; message_id: string }
   | { type: "text_delta"; delta: string }
   | { type: "tool_call"; tool: string; patches: unknown[]; resolve_issue_ids: string[] }
-  | { type: "patches_applied"; patches_count: number; resolved_issue_ids: string[]; new_issue_ids: string[]; regenerated_artifacts: string[] }
+  | { type: "patches_applied"; patches_count: number; patched_paths: string[]; resolved_issue_ids: string[]; new_issue_ids: string[]; regenerated_artifacts: string[] }
   | { type: "message_end"; message_id: string }
   | { type: "error"; code: string; message: string };
 

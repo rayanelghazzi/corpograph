@@ -17,6 +17,7 @@ interface HumanDecisionPanelProps {
   phase: number;
   issueSummary: IssueSummary;
   isTerminal: boolean;
+  isViewingPast: boolean;
   isLoading: boolean;
   onDecision: (decision: Decision, rationale?: string) => void;
 }
@@ -60,6 +61,7 @@ export function HumanDecisionPanel({
   phase,
   issueSummary,
   isTerminal,
+  isViewingPast,
   isLoading,
   onDecision,
 }: HumanDecisionPanelProps) {
@@ -68,17 +70,17 @@ export function HumanDecisionPanel({
   const buttons = getButtons(phase);
   const hasBlocking = issueSummary.blocking > 0;
 
-  if (isTerminal) return null;
+  if (isTerminal || isViewingPast) return null;
 
   return (
     <>
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="flex w-full items-center justify-between py-2">
-          <div>
-            <h3 className="text-sm font-semibold">Human Decision</h3>
+          <div className="text-left">
+            <h3 className="text-[20px] font-bold leading-tight">Human Decision</h3>
             <p className="text-xs text-muted-foreground">Approve or escalate at decision gates</p>
           </div>
-          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-3 pt-3">
           {buttons.map((btn) => {

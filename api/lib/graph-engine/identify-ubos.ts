@@ -1,7 +1,7 @@
 import { CanonicalRecord } from "@/lib/types";
 import { computeEffectiveOwnership } from "./compute-ownership";
 
-const UBO_THRESHOLD = 25;
+const UBO_THRESHOLD = 10;
 
 export function identifyBeneficialOwners(
   canonicalRecord: CanonicalRecord

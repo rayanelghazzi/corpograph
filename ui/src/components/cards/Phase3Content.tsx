@@ -3,6 +3,7 @@ import { ContentCard } from "./ContentCard";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useIssues } from "@/hooks/use-issues";
+import { useFlashClass } from "@/hooks/use-patch-highlight";
 import { REGULATORY_TEXT } from "@/lib/constants";
 import type { CaseDetail } from "@/api/types";
 
@@ -26,16 +27,18 @@ export function Phase3Content({ caseData }: { caseData: CaseDetail }) {
       {/* Complexity & Material Discrepancy */}
       <ContentCard title="Case Complexity & Material Discrepancy" subtitle="ART-9, ART-10">
         {/* Complexity Score */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="font-semibold text-sm">Complexity Score</p>
-            <p className="text-lg font-semibold">{complexityScore}/10</p>
+        <FlashBlock path="risk_assessment">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="font-semibold text-sm">Complexity Score</p>
+              <p className="text-lg font-semibold">{complexityScore}/10</p>
+            </div>
+            <Progress value={complexityScore * 10} className="h-2" />
+            {cr.risk_assessment?.rationale && (
+              <p className="text-xs text-muted-foreground">{cr.risk_assessment.rationale}</p>
+            )}
           </div>
-          <Progress value={complexityScore * 10} className="h-2" />
-          {cr.risk_assessment?.rationale && (
-            <p className="text-xs text-muted-foreground">{cr.risk_assessment.rationale}</p>
-          )}
-        </div>
+        </FlashBlock>
 
         {/* Material Discrepancies Resolved */}
         <div className="space-y-2 pt-4">
@@ -80,10 +83,12 @@ export function Phase3Content({ caseData }: { caseData: CaseDetail }) {
         {(cr.confirmation_measures?.length ?? 0) > 0 ? (
           <div className="space-y-2">
             {cr.confirmation_measures!.map((m, i) => (
-              <div key={i} className="flex items-start gap-2 rounded-md border p-3">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-                <p className="text-sm">{m.measure}</p>
-              </div>
+              <FlashBlock key={i} path={`confirmation_measures[${i}]`}>
+                <div className="flex items-start gap-2 rounded-md border p-3">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+                  <p className="text-sm">{m.measure}</p>
+                </div>
+              </FlashBlock>
             ))}
           </div>
         ) : (
@@ -102,17 +107,18 @@ export function Phase3Content({ caseData }: { caseData: CaseDetail }) {
               : "default"
           }
         >
-          <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
-            <div>
-              <p className="text-xs text-muted-foreground">Acting on Behalf</p>
-              <Badge variant={cr.third_party_determination.acting_on_behalf ? "destructive" : "secondary"}>
-                {cr.third_party_determination.acting_on_behalf ? "Yes" : "No"}
-              </Badge>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Rationale</p>
-              <p>{cr.third_party_determination.determination_rationale}</p>
-            </div>
+          <FlashBlock path="third_party_determination">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground">Acting on Behalf</p>
+                <Badge variant={cr.third_party_determination.acting_on_behalf ? "destructive" : "secondary"}>
+                  {cr.third_party_determination.acting_on_behalf ? "Yes" : "No"}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Rationale</p>
+                <p>{cr.third_party_determination.determination_rationale}</p>
+              </div>
             {cr.third_party_determination.third_party_details && (
               <>
                 <div>
@@ -125,13 +131,14 @@ export function Phase3Content({ caseData }: { caseData: CaseDetail }) {
                 </div>
               </>
             )}
-            {cr.third_party_determination.grounds_for_suspicion && (
-              <div className="col-span-2">
-                <p className="text-xs text-muted-foreground">Grounds for Suspicion</p>
-                <p className="text-red-600">{cr.third_party_determination.grounds_for_suspicion}</p>
-              </div>
-            )}
-          </div>
+              {cr.third_party_determination.grounds_for_suspicion && (
+                <div className="col-span-2">
+                  <p className="text-xs text-muted-foreground">Grounds for Suspicion</p>
+                  <p className="text-red-600">{cr.third_party_determination.grounds_for_suspicion}</p>
+                </div>
+              )}
+            </div>
+          </FlashBlock>
         </ContentCard>
       )}
 
@@ -141,4 +148,9 @@ export function Phase3Content({ caseData }: { caseData: CaseDetail }) {
       </ContentCard>
     </div>
   );
+}
+
+function FlashBlock({ path, children }: { path: string; children: React.ReactNode }) {
+  const flash = useFlashClass(path);
+  return <div className={flash}>{children}</div>;
 }

@@ -7,6 +7,8 @@ import { handleChatMessage } from "@/lib/ai-engine/chat-handler";
 import { applyPatches } from "@/lib/patches/apply";
 import { generateArtifacts } from "@/lib/artifacts/renderer";
 import { PHASE_ARTIFACT_MAP } from "@/lib/artifacts/phase-map";
+import { detectOwnershipGaps } from "@/lib/graph-engine/detect-gaps";
+import { identifyBeneficialOwners } from "@/lib/graph-engine/identify-ubos";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -131,6 +133,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
             const snapshotBefore = structuredClone(canonicalRecord);
             const patched = applyPatches(canonicalRecord, result.patches);
 
+            if (currentPhase >= 2) {
+              patched.ownership_gaps = detectOwnershipGaps(patched);
+              patched.beneficial_owners = identifyBeneficialOwners(patched);
+            }
+
             await prisma.case.update({
               where: { id },
               data: { canonicalRecord: patched as object },
@@ -174,6 +181,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
             send("patches_applied", {
               patches_count: result.patches.length,
+              patched_paths: result.patches.map((p) => p.path),
               resolved_issue_ids: result.resolveIssueIds ?? [],
               new_issue_ids: [],
               regenerated_artifacts: regenerated,

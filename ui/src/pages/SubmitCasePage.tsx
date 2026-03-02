@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Upload, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,31 @@ import { createCase } from "@/api/cases";
 import { uploadDocuments } from "@/api/documents";
 import { runPhase } from "@/api/phases";
 
+const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+const pickN = <T,>(arr: T[], min: number, max: number): T[] => {
+  const n = min + Math.floor(Math.random() * (max - min + 1));
+  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(n, arr.length));
+};
+
+const MAGIC_PURPOSES = [
+  "Operating account for payroll, vendor payments, and day-to-day corporate expenses",
+  "Investment holding account for managing portfolio of publicly traded securities",
+  "Treasury management account to consolidate subsidiary cash flows and optimize working capital",
+  "Account for receiving client payments and disbursing contractor invoices",
+  "Corporate savings and short-term fixed income investment vehicle",
+  "Centralized account for managing intercompany transfers across multiple subsidiaries",
+  "Dedicated account for real estate acquisition and property management cash flows",
+];
+const MAGIC_VOLUMES = ["25000", "50000", "100000", "250000", "500000", "1000000", "2500000"];
+const MAGIC_GEOS = [
+  "CA, US", "CA, US, GB", "CA, US, GB, DE", "CA", "CA, US, AU",
+  "CA, US, JP, SG", "CA, GB, FR, DE", "CA, US, MX", "CA, US, GB, CH",
+];
+
 export function SubmitCasePage() {
   const navigate = useNavigate();
+  const magicRef = useRef<HTMLButtonElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +51,18 @@ export function SubmitCasePage() {
   const [geographies, setGeographies] = useState("");
   const [consented, setConsented] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
+
+  const autoFill = () => {
+    setAccountType(pick(["corporate_chequing", "corporate_investing"]));
+    setEntityType(pick(["corporation", "trust", "partnership"]));
+    setServiceModel(pick(["OEO", "managed", ""]));
+    setAccountPurpose(pick(MAGIC_PURPOSES));
+    setMonthlyVolume(pick(MAGIC_VOLUMES));
+    setTransactionTypes(pickN(TRANSACTION_TYPES, 1, 3));
+    setFundingSources(pickN(FUNDING_SOURCES, 1, 3));
+    setGeographies(pick(MAGIC_GEOS));
+    setConsented(true);
+  };
 
   const toggleItem = (list: string[], item: string, setter: (v: string[]) => void) => {
     setter(list.includes(item) ? list.filter((i) => i !== item) : [...list, item]);
@@ -89,6 +124,14 @@ export function SubmitCasePage() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
+      <button
+        ref={magicRef}
+        type="button"
+        onClick={autoFill}
+        className="fixed top-3 left-3 h-6 w-6 cursor-default opacity-0"
+        tabIndex={-1}
+        aria-hidden
+      />
       <div className="mb-8">
         <h1 className="text-2xl font-medium">Submit Onboarding Packet</h1>
         <p className="mt-1 text-muted-foreground">

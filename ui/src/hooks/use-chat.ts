@@ -1,10 +1,13 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { getChatHistory, streamChat } from "@/api/chat";
+import { usePatchHighlight } from "@/hooks/use-patch-highlight";
 import type { ChatMessage, SSEEvent } from "@/api/types";
 
 export function useChat(caseId: string) {
   const queryClient = useQueryClient();
+  const { addPaths } = usePatchHighlight();
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +110,19 @@ export function useChat(caseId: string) {
     queryClient.invalidateQueries({ queryKey: ["case", caseId, "issues"] });
     queryClient.invalidateQueries({ queryKey: ["case", caseId, "artifacts"] });
     queryClient.invalidateQueries({ queryKey: ["case", caseId, "graph"] });
+
+    if (event.patched_paths?.length) {
+      addPaths(event.patched_paths);
+    }
+
+    const parts: string[] = [];
+    if (event.patches_count) parts.push(`${event.patches_count} field(s) updated`);
+    if (event.resolved_issue_ids?.length) parts.push(`${event.resolved_issue_ids.length} issue(s) resolved`);
+    if (event.regenerated_artifacts?.length) parts.push(`${event.regenerated_artifacts.join(", ")} regenerated`);
+
+    toast.success("Case data updated", {
+      description: parts.join(" · ") || "Patches applied successfully",
+    });
   }
 
   return {

@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/api/types";
 
@@ -52,8 +51,8 @@ export function ChatPopover({
     <div className="fixed bottom-6 right-6 z-50 flex h-[480px] w-[400px] flex-col rounded-xl border bg-background shadow-xl">
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>
-          <h3 className="text-sm font-semibold">AI Agent Chat</h3>
-          <p className="text-xs text-muted-foreground">Ask questions or request clarifications</p>
+          <h3 className="text-sm font-semibold">Analyst Assistant</h3>
+          <p className="text-xs text-muted-foreground">Request updates or ask clarifications about the case</p>
         </div>
         <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground">
           <X className="h-4 w-4" />

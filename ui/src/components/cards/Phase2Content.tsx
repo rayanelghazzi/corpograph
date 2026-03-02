@@ -1,19 +1,35 @@
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { useMemo } from "react";
+import { AlertCircle, CheckCircle2, Maximize2 } from "lucide-react";
+import { ReactFlow, Background } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import { ContentCard } from "./ContentCard";
-import { EmptyState } from "@/components/shared/EmptyState";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { useIssues } from "@/hooks/use-issues";
+import { useFlashClass } from "@/hooks/use-patch-highlight";
 import { formatPercent } from "@/lib/format";
-import type { CaseDetail } from "@/api/types";
+import { computeLayout } from "@/lib/graph-layout";
+import { graphNodeTypes } from "@/components/modals/GraphModal";
+import type { CaseDetail, GraphResponse } from "@/api/types";
 
-export function Phase2Content({ caseData }: { caseData: CaseDetail }) {
+interface Phase2ContentProps {
+  caseData: CaseDetail;
+  graphData?: GraphResponse | null;
+  onOpenGraph?: () => void;
+}
+
+export function Phase2Content({ caseData, graphData, onOpenGraph }: Phase2ContentProps) {
   const cr = caseData.canonical_record;
   const { data: issuesData } = useIssues(caseData.id, { phase: 2 });
   const gaps = cr.ownership_gaps ?? [];
-  const hasBlockingIssues = caseData.issue_summary.blocking > 0;
+
+  const layout = useMemo(
+    () => (graphData ? computeLayout(graphData) : null),
+    [graphData]
+  );
 
   return (
     <div className="space-y-6">
@@ -66,22 +82,49 @@ export function Phase2Content({ caseData }: { caseData: CaseDetail }) {
         })}
       </ContentCard>
 
-      {/* Ownership Graph preview */}
-      <ContentCard title="Ownership Graph" subtitle="ART-6">
-        {hasBlockingIssues ? (
-          <EmptyState message="Please resolve ownership gaps before viewing the complete graph" />
-        ) : (
-          <div className="rounded-lg bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-            Use the "View Graph" button in the header to see the full ownership visualization.
+      {/* Ownership Graph inline preview */}
+      <ContentCard
+        title="Ownership Graph"
+        subtitle="ART-6"
+        action={
+          onOpenGraph && graphData ? (
+            <Button variant="outline" size="sm" onClick={onOpenGraph}>
+              <Maximize2 className="mr-1.5 h-3.5 w-3.5" />
+              Expand
+            </Button>
+          ) : undefined
+        }
+      >
+        {layout ? (
+          <div className="h-[350px] rounded-lg border bg-muted/30">
+            <ReactFlow
+              nodes={layout.nodes}
+              edges={layout.edges}
+              nodeTypes={graphNodeTypes}
+              nodesDraggable={false}
+              nodesConnectable={false}
+              elementsSelectable={false}
+              panOnDrag={false}
+              zoomOnScroll={false}
+              zoomOnPinch={false}
+              zoomOnDoubleClick={false}
+              preventScrolling={false}
+              fitView
+              fitViewOptions={{ padding: 0.3 }}
+            >
+              <Background />
+            </ReactFlow>
           </div>
+        ) : (
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            Graph data not available yet.
+          </p>
         )}
       </ContentCard>
 
       {/* Beneficial Owners */}
       <ContentCard title="Beneficial Ownership Summary" subtitle="ART-7">
-        {hasBlockingIssues ? (
-          <EmptyState message="Please resolve ownership gaps to identify all beneficial owners" />
-        ) : (cr.beneficial_owners?.length ?? 0) > 0 ? (
+        {(cr.beneficial_owners?.length ?? 0) > 0 ? (
           <>
             <Table>
               <TableHeader>
@@ -92,8 +135,8 @@ export function Phase2Content({ caseData }: { caseData: CaseDetail }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {cr.beneficial_owners!.map((bo) => (
-                  <TableRow key={bo.entity_id}>
+                {cr.beneficial_owners!.map((bo, i) => (
+                  <FlashRow key={bo.entity_id} path={`beneficial_owners[${i}]`}>
                     <TableCell className="font-medium">{bo.name}</TableCell>
                     <TableCell>{formatPercent(bo.effective_ownership_pct)}</TableCell>
                     <TableCell>
@@ -103,12 +146,14 @@ export function Phase2Content({ caseData }: { caseData: CaseDetail }) {
                         ))}
                       </div>
                     </TableCell>
-                  </TableRow>
+                  </FlashRow>
                 ))}
               </TableBody>
             </Table>
             {cr.ownership_narrative && (
-              <p className="mt-4 text-sm text-muted-foreground">{cr.ownership_narrative}</p>
+              <FlashBlock path="ownership_narrative">
+                <p className="mt-4 text-sm text-muted-foreground">{cr.ownership_narrative}</p>
+              </FlashBlock>
             )}
           </>
         ) : (
@@ -117,4 +162,14 @@ export function Phase2Content({ caseData }: { caseData: CaseDetail }) {
       </ContentCard>
     </div>
   );
+}
+
+function FlashRow({ path, children }: { path: string; children: React.ReactNode }) {
+  const flash = useFlashClass(path);
+  return <TableRow className={flash}>{children}</TableRow>;
+}
+
+function FlashBlock({ path, children }: { path: string; children: React.ReactNode }) {
+  const flash = useFlashClass(path);
+  return <div className={flash}>{children}</div>;
 }

@@ -109,6 +109,24 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   }
 }
 
+export async function DELETE(_request: NextRequest, context: RouteContext) {
+  try {
+    const { id } = await context.params;
+
+    const caseData = await prisma.case.findUnique({ where: { id } });
+    if (!caseData) {
+      return errorResponse("NOT_FOUND", "Case not found");
+    }
+
+    await prisma.case.delete({ where: { id } });
+
+    return new NextResponse(null, { status: 204 });
+  } catch (err) {
+    console.error("DELETE /api/cases/:id error:", err);
+    return errorResponse("INTERNAL_ERROR", "Failed to delete case");
+  }
+}
+
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;

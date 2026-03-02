@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { PatchHighlightProvider } from "@/hooks/use-patch-highlight";
 import App from "./App";
 import "./index.css";
 
@@ -21,10 +22,12 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <TooltipProvider>
-          <App />
-          <Toaster />
-        </TooltipProvider>
+        <PatchHighlightProvider>
+          <TooltipProvider>
+            <App />
+            <Toaster />
+          </TooltipProvider>
+        </PatchHighlightProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>

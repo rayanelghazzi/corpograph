@@ -18,7 +18,7 @@ export function CaseHeader({
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center justify-between border-b px-6 py-4">
+    <div className="flex items-center justify-between border-b border-foreground/20 px-6 py-4">
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate("/dashboard")}

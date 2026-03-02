@@ -26,3 +26,11 @@ export function updateCase(id: string, body: Partial<CreateCaseRequest>) {
     body: JSON.stringify(body),
   });
 }
+
+export async function deleteCase(id: string) {
+  const res = await fetch(`/api/cases/${id}`, { method: "DELETE" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error?.message ?? "Failed to delete case");
+  }
+}

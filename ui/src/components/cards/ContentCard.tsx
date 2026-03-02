@@ -7,6 +7,7 @@ interface ContentCardProps {
   subtitle?: string;
   variant?: "default" | "error" | "info";
   assistiveText?: string;
+  action?: ReactNode;
   children: ReactNode;
 }
 
@@ -15,6 +16,7 @@ export function ContentCard({
   subtitle,
   variant = "default",
   assistiveText,
+  action,
   children,
 }: ContentCardProps) {
   return (
@@ -26,10 +28,15 @@ export function ContentCard({
       )}
     >
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
-        {subtitle && (
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
-        )}
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+            {subtitle && (
+              <p className="text-sm text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
+          {action}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {children}
