@@ -46,6 +46,7 @@ But streamlining it and automating parts of it might make it worth it for Wealth
 
 - Automatically parse documents and extract meaningful data from them for future processing  
 - Detect discrepancies, ambiguities, and gaps in the data  
+- Build complex beneficialy ownership graphs from multiple messy, unstructured corporate records
 - Make the editing interface smoother, more intuitive, and less redundant  
 - Assess the case and recommend actions  
 
