@@ -1,6 +1,6 @@
-# CorpGraph — Frontend Technical Design Document
+# CorpoGraph — Frontend Technical Design Document
 
-> **Scope**: Full frontend architecture for the CorpGraph UI.  
+> **Scope**: Full frontend architecture for the CorpoGraph UI.  
 > **Stack**: Vite · React 19 · TypeScript · Tailwind CSS · shadcn/ui  
 > **Backend reference**: `documentation/system-design/backend-tdd.md`  
 > **PRD reference**: `documentation/ui-flow/prd.md`  

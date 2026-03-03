@@ -1,8 +1,8 @@
-# CorpGraph — AI-Native Corporate Onboarding Orchestrator
+# CorpoGraph — AI-Native Corporate Onboarding Orchestrator
 
 ## Summary
 
-CorpGraph is an AI-native internal compliance workflow that enables Wealthsimple to onboard complex, multi-owned, and multi-layered corporations — without increasing analyst headcount.
+CorpoGraph is an AI-native internal compliance workflow that enables Wealthsimple to onboard complex, multi-owned, and multi-layered corporations — without increasing analyst headcount.
 
 Instead of manually parsing documents, mapping ownership chains, and reconciling discrepancies across registries, self-certifications, and screening results, analysts operate inside a structured orchestration system that generates normalized compliance artifacts (ART-*) at each phase.
 

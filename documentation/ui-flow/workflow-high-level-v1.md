@@ -1,8 +1,8 @@
-# CorpGraph Onboarding Orchestrator
+# CorpoGraph Onboarding Orchestrator
 
 ## Overview
 
-**CorpGraph Onboarding Orchestrator** is an AI-native system that
+**CorpoGraph Onboarding Orchestrator** is an AI-native system that
 automates and structures the onboarding of multi-owned and multi-layered
 corporations. It produces:
 

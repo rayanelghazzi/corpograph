@@ -1,6 +1,6 @@
-# CorpGraph API
+# CorpoGraph API
 
-Backend API for the CorpGraph AI-Native Corporate Onboarding Orchestrator. Built with Next.js (App Router), Prisma, PostgreSQL, and OpenAI.
+Backend API for the CorpoGraph AI-Native Corporate Onboarding Orchestrator. Built with Next.js (App Router), Prisma, PostgreSQL, and OpenAI.
 
 ## Prerequisites
 

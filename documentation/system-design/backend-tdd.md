@@ -1,4 +1,4 @@
-# CorpGraph — Backend Technical Design Document
+# CorpoGraph — Backend Technical Design Document
 
 > **Scope**: Full design for Phases 0–3. Stub endpoints for Phases 4–5.
 > **Stack**: Next.js API routes · PostgreSQL · Prisma · OpenAI

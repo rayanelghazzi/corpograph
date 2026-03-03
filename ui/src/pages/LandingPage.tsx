@@ -8,7 +8,7 @@ export function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
       <div className="text-center">
-        <h1 className="text-3xl font-medium text-foreground">CorpGraph</h1>
+        <h1 className="text-3xl font-medium text-foreground">CorpoGraph</h1>
         <p className="mt-2 text-muted-foreground">
           AI-Native Corporate Onboarding Orchestrator
         </p>

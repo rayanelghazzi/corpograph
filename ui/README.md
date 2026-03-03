@@ -1,6 +1,6 @@
-# CorpGraph UI
+# CorpoGraph UI
 
-Frontend for the CorpGraph AI-Native Corporate Onboarding Orchestrator.
+Frontend for the CorpoGraph AI-Native Corporate Onboarding Orchestrator.
 
 ## Tech Stack
 

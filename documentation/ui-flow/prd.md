@@ -1,7 +1,7 @@
-# CorpGraph UI — Product Requirements Document
+# CorpoGraph UI — Product Requirements Document
 
 > **Version**: 2.0  
-> **Scope**: Complete UI specification for the CorpGraph corporate onboarding orchestrator.  
+> **Scope**: Complete UI specification for the CorpoGraph corporate onboarding orchestrator.  
 > **Audience**: Implementation agent / frontend developer.  
 > **Backend reference**: `documentation/system-design/backend-tdd.md` — all API endpoints, response shapes, and SSE protocol are defined there.  
 > **Design reference**: Figma file `PUE7rLRT6eLxvSsczEONi6` — visual layout, component styling, and design system.
@@ -12,7 +12,7 @@
 
 ### 1.1 Product Summary
 
-CorpGraph is an AI-native compliance workflow tool that enables analysts to onboard complex, multi-layered corporations. The UI has two roles:
+CorpoGraph is an AI-native compliance workflow tool that enables analysts to onboard complex, multi-layered corporations. The UI has two roles:
 
 - **Role A — Input Provider**: Submits a case with corporate documents and questionnaire answers (Phase 0 only).
 - **Role B — Compliance Analyst**: Reviews AI-generated artifacts, resolves issues via chat, and makes human-gate decisions across Phases 1–5.
@@ -446,7 +446,7 @@ GET /api/cases
 #### Layout
 
 **Header**:
-- "CorpGraph" (title) / "AI-Native Corporate Onboarding Orchestrator" (subtitle)
+- "CorpoGraph" (title) / "AI-Native Corporate Onboarding Orchestrator" (subtitle)
 - No action buttons in the header.
 
 **Section title**: "Active Cases" / "Review and manage corporate onboarding cases"
