@@ -56,6 +56,9 @@ This is what AI helps with, and where it stops. The human analyst is still respo
 
 So the AI supports and proposes, but the human decides and owns accountability.
 
+**S.E:** 140-180k
+**Years of Experience with AI tools:** 2
+
 ---
 
 ## Prototype Limitations
