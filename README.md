@@ -22,7 +22,7 @@ While brainstorming for ideas to work on, I stumbled upon a couple interesting r
 - "Have a single layer of ownership for incorporated entities"
 - "We currently don't support account opening or transfers for self-directed accounts with three or more owners."
 
-So multi-owned (3+ owners) and multi-layered corporations weren't supported. I was curious to understand why. After a bit of back and forth with ChatGPT, I found some potential reasons:
+So multi-owned (3+ owners) and multi-layered corporations arent't supported. I was curious to understand why. After a bit of back and forth with ChatGPT, I found some potential reasons:
 
 - Complex ownership makes identity and regulatory verification harder (especially automated verification)
 - Financial platforms must follow strict regulations on anti-money-laundering (AML), know-your-customer (KYC), and ownership transparency. So complex ownership chains or many owners increase risk profiles and documentation burden, which Wealthsimple may be avoiding
