@@ -109,7 +109,11 @@ export function DashboardPage() {
                     {c.id.slice(0, 8)}
                   </TableCell>
                   <TableCell className="capitalize text-sm">—</TableCell>
-                  <TableCell className="text-sm">Phase {c.current_phase}</TableCell>
+                  <TableCell className="text-sm">
+                    {c.current_phase >= 1 && c.current_phase <= 5
+                      ? `Phase ${c.current_phase}`
+                      : "Done"}
+                  </TableCell>
                   <TableCell>
                     <StatusBadge status={c.status} />
                   </TableCell>
