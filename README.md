@@ -11,7 +11,7 @@ This is my submission to Wealthsimple's [AI Builder](https://jobs.ashbyhq.com/we
 **Note:** Really sorry for the long demo, couldn't shrink it to less than that. Please feel free to play it x2.  
 **Another Note:** Renamed it to CorpoGraph after filming the demo, sounds nicer.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/SbYIAX-CGjw" title="Demo" frameborder="0" allowfullscreen></iframe>
+[**Watch demo on YouTube**](https://www.youtube.com/watch?v=SbYIAX-CGjw)
 
 ---
 
