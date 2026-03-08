@@ -1,15 +1,10 @@
 # CorpoGraph
 
-An AI-native onboarding workflow that expands Wealthsimple’s ability to serve more complex business structures while keeping humans in control.
-
-This is my submission to Wealthsimple's [AI Builder](https://jobs.ashbyhq.com/wealthsimple/f7e4d9e1-2774-4a21-99b6-02e1e4120cef?utm_source=linkedinpaid) application.
+An AI-native onboarding workflow for banks that expands their ability to serve more complex business structures while keeping humans in control.
 
 ---
 
 ## Demo
-
-**Note:** Really sorry for the long demo, couldn't shrink it to less than that. Please feel free to play it x2.  
-**Another Note:** Renamed it to CorpoGraph after filming the demo, sounds nicer.
 
 [**Watch demo on YouTube**](https://www.youtube.com/watch?v=SbYIAX-CGjw)
 
@@ -17,7 +12,7 @@ This is my submission to Wealthsimple's [AI Builder](https://jobs.ashbyhq.com/we
 
 ## Written Explanation
 
-While brainstorming for ideas to work on, I stumbled upon a couple interesting requirements/restrictions in the Wealthsimple write-up for [opening a corporate account](https://help.wealthsimple.com/hc/en-ca/articles/4404312884763-Open-a-Corporate-account):
+I stumbled upon a couple interesting requirements/restrictions in the Wealthsimple write-up for [opening a corporate account](https://help.wealthsimple.com/hc/en-ca/articles/4404312884763-Open-a-Corporate-account):
 
 - "Have a single layer of ownership for incorporated entities"
 - "We currently don't support account opening or transfers for self-directed accounts with three or more owners."
@@ -57,9 +52,6 @@ This is what AI helps with, and where it stops. The human analyst is still respo
 
 So the AI supports and proposes, but the human decides and owns accountability.
 
-**S.E:** 140-180k
-**Years of Experience with AI tools:** 2
-
 ---
 
 ## Prototype Limitations
@@ -82,8 +74,3 @@ See the [documentation](./documentation) folder for design notes, workflow specs
 - [Workflow](./documentation/workflow/) — workflow versions and specs
 - [Artifact spec](./documentation/artifact-spec.md), [backlog](./documentation/backlog.md), [deep research](./documentation/deep-research-report.md)
 
----
-
-## Deployment
-
-The project will be deployed later; I didn't have the chance to do this by the deadline. It can be run locally, see the `api` and `ui` directories for setup and run instructions.
